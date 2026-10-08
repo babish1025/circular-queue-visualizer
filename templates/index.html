@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Circular Queue Visualizer — Mobile-First Academic Lab</title>
+  <meta name="description" content="Mobile-First Interactive Circular Queue Learning and Visualization System with Pure Python Engine, Modulo Arithmetic, Physical Array vs Logical FIFO representations.">
+  <meta name="theme-color" content="#090d16">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/svg+xml" href="/static/icons/icon.svg">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="app-shell" id="appShell">
+    
+    <!-- Top Header -->
+    <header class="app-header" id="appHeader">
+      <div class="header-left">
+        <div class="brand-title">
+          <span class="brand-icon">↻</span>
+          <h1>Circular Queue</h1>
+        </div>
+        <div class="header-status-strip">
+          <span class="status-pill status-running" id="backendStatusPill">
+            <span class="pulse-dot"></span> <span id="backendStatusText">Running</span>
+          </span>
+          <span class="status-pill status-db" id="dbStatusPill">
+            <span id="dbStatusText">● SQLite Mode</span>
+          </span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <button class="header-btn" id="learnToggleBtn" aria-label="Toggle Learning Mode">
+          💡 <span class="btn-text">LEARN</span>
+        </button>
+        <button class="header-btn demo-btn" id="demoToggleBtn" aria-label="Toggle Professor Demo">
+          🎓 <span class="btn-text">DEMO</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Navigation Bar -->
+    <nav class="nav-segment" id="navSegment">
+      <button class="nav-tab active" data-tab="queue" id="tabQueueBtn">
+        <span class="nav-icon">⟳</span> QUEUE
+      </button>
+      <button class="nav-tab" data-tab="learn" id="tabLearnBtn">
+        <span class="nav-icon">📖</span> THEORY
+      </button>
+      <button class="nav-tab" data-tab="history" id="tabHistoryBtn">
+        <span class="nav-icon">📜</span> HISTORY
+      </button>
+      <button class="nav-tab" data-tab="about" id="tabAboutBtn">
+        <span class="nav-icon">ℹ</span> ABOUT
+      </button>
+    </nav>
+
+    <!-- Toast Notification Banner -->
+    <div class="toast-banner" id="toastBanner" role="alert" aria-live="assertive">
+      <div class="toast-content" id="toastContent">Ready</div>
+    </div>
+
+    <!-- Circular Wrap Notification Banner -->
+    <div class="wrap-toast" id="wrapToast" role="alert">
+      <div class="wrap-toast-header">
+        <span class="wrap-icon">↻</span>
+        <strong id="wrapToastTitle">CIRCULAR WRAP-AROUND</strong>
+      </div>
+      <div class="wrap-toast-body" id="wrapToastBody">
+        REAR: 4 → 0 &nbsp;|&nbsp; Formula: (4 + 1) % 5 = 0
+      </div>
+    </div>
+
+    <!-- Main Content Tabs Container -->
+    <main class="main-content" id="mainContent">
+
+      <!-- TAB 1: ONE-SCREEN QUEUE VISUALIZER -->
+      <section class="tab-page active-tab" id="pageQueue">
+        
+        <!-- Professor Demo Control Panel (collapsible banner when active) -->
+        <div class="demo-controller-card" id="demoControllerCard" style="display: none;">
+          <div class="demo-card-header">
+            <div class="demo-title">
+              <span class="badge badge-accent">PROFESSOR DEMO</span>
+              <span class="demo-step-badge" id="demoStepBadge">Step 1 of 12</span>
+            </div>
+            <button class="demo-close-btn" id="demoCloseBtn" title="Exit Demo">✕</button>
+          </div>
+          <div class="demo-step-text" id="demoStepText">
+            Demonstrating capacity 5: 10,20,30,40,50 → Overflow check → Dequeue 10,20 → Enqueue 60,70 wrap-around!
+          </div>
+          <div class="demo-controls-row">
+            <button class="btn btn-sm btn-action" id="demoPlayBtn">▶ Play</button>
+            <button class="btn btn-sm btn-secondary" id="demoPauseBtn" disabled>⏸ Pause</button>
+            <button class="btn btn-sm btn-secondary" id="demoStepBtn">⏭ Step</button>
+            <button class="btn btn-sm btn-danger" id="demoResetBtn">⏹ Reset</button>
+            <select class="select-speed" id="demoSpeedSelect" aria-label="Playback Speed">
+              <option value="1800">1x Speed</option>
+              <option value="1200">1.5x Speed</option>
+              <option value="700">2x Speed</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 1. QUEUE VISUALIZATION CONTAINER -->
+        <div class="visualizer-card" id="visualizerCard">
+          
+          <div class="visualizer-header">
+            <div class="card-caption">
+              <span class="caption-dot"></span>
+              <span class="caption-text">CIRCULAR BUFFER TRACK</span>
+            </div>
+            <div class="capacity-pill-group">
+              <span class="cap-indicator" id="headerCapBadge">CAPACITY: 5</span>
+              <button class="btn-micro" id="openCapModalBtn" title="Change Capacity">⚙ Edit</button>
+            </div>
+          </div>
+
+          <!-- Dynamic Adaptive Queue Slots Layout -->
+          <div class="queue-viewport" id="queueViewport">
+            <!-- Rendered by JS: Slots with values, indices, Front/Rear pointer badges -->
+            <div class="queue-slots-wrapper" id="queueSlotsWrapper">
+              <!-- Injected by app.js -->
+            </div>
+          </div>
+
+          <!-- Modulo Track Wrap Indicator Ribbon -->
+          <div class="track-loop-legend">
+            <span class="loop-arrow-symbol">↻</span>
+            <span class="loop-legend-text">Wrap-Around Path: (Index + 1) % Capacity</span>
+          </div>
+
+        </div>
+
+        <!-- 2. INFORMATION STRIP (Compact Mobile Cards) -->
+        <div class="info-strip" id="infoStrip">
+          <div class="info-cell" id="infoCellFront">
+            <span class="cell-label">FRONT</span>
+            <span class="cell-val text-cyan" id="valFront">-1</span>
+          </div>
+          <div class="info-cell" id="infoCellRear">
+            <span class="cell-label">REAR</span>
+            <span class="cell-val text-amber" id="valRear">-1</span>
+          </div>
+          <div class="info-cell" id="infoCellSize">
+            <span class="cell-label">SIZE</span>
+            <span class="cell-val text-emerald" id="valSize">0</span>
+          </div>
+          <div class="info-cell" id="infoCellCap">
+            <span class="cell-label">CAPACITY</span>
+            <span class="cell-val text-purple" id="valCap">5</span>
+          </div>
+          <div class="info-cell" id="infoCellStatus">
+            <span class="cell-label">STATUS</span>
+            <span class="cell-val text-muted" id="valStatus">EMPTY</span>
+          </div>
+        </div>
+
+        <!-- 3. PHYSICAL ARRAY VS LOGICAL QUEUE COMPARISON STRIP -->
+        <div class="dual-rep-card" id="dualRepCard">
+          <div class="rep-row">
+            <div class="rep-header">
+              <span class="rep-tag rep-tag-phys">PHYSICAL ARRAY</span>
+              <span class="rep-sub">RAM Memory Slots [0 .. Cap-1]</span>
+            </div>
+            <div class="rep-bubbles" id="physicalArrayBubbles">
+              <!-- Physical slot representations -->
+            </div>
+          </div>
+
+          <div class="rep-divider"></div>
+
+          <div class="rep-row">
+            <div class="rep-header">
+              <span class="rep-tag rep-tag-logic">LOGICAL FIFO QUEUE</span>
+              <span class="rep-sub">First In, First Out Order</span>
+            </div>
+            <div class="rep-bubbles" id="logicalQueueBubbles">
+              <!-- Logical arrow sequence -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 4. ONE-SCREEN 2-COLUMN TOUCH CONTROL CENTER -->
+        <div class="control-center" id="controlCenter">
+          
+          <!-- Enqueue Input Row -->
+          <form class="enqueue-bar" id="enqueueForm" onsubmit="return false;">
+            <div class="input-wrapper">
+              <label for="enqueueValueInput" class="sr-only">Value to Enqueue</label>
+              <input 
+                type="text" 
+                id="enqueueValueInput" 
+                class="value-input" 
+                placeholder="Enter value (e.g. 10)" 
+                maxlength="6"
+                autocomplete="off"
+                inputmode="numeric"
+              >
+              <button type="button" class="btn-preset" id="quickValBtn" title="Random Value">🎲</button>
+            </div>
+            <button type="submit" class="btn btn-enqueue" id="btnEnqueue">
+              <span class="btn-symbol">+</span> ENQUEUE
+            </button>
+          </form>
+
+          <!-- 2-Column Touch Button Grid (>=48px touch targets) -->
+          <div class="control-grid-2col">
+            <button class="btn btn-grid btn-dequeue" id="btnDequeue">
+              <span class="btn-symbol">−</span> DEQUEUE
+            </button>
+            <button class="btn btn-grid btn-peek" id="btnPeek">
+              <span class="btn-symbol">👁</span> PEEK
+            </button>
+            <button class="btn btn-grid btn-display" id="btnDisplay">
+              <span class="btn-symbol">≡</span> DISPLAY
+            </button>
+            <button class="btn btn-grid btn-clear" id="btnClear">
+              <span class="btn-symbol">⌫</span> CLEAR
+            </button>
+            <button class="btn btn-grid btn-reset" id="btnReset">
+              <span class="btn-symbol">↺</span> RESET
+            </button>
+            <button class="btn btn-grid btn-cap" id="btnChangeCap">
+              <span class="btn-symbol">⚙</span> SET CAP
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- TAB 2: LEARNING / THEORY PANEL -->
+      <section class="tab-page" id="pageLearn">
+        <div class="theory-container">
+          <div class="theory-card">
+            <h2>💡 Circular Queue Fundamentals</h2>
+            <p>
+              A <strong>Circular Queue</strong> is an advanced linear data structure that overcomes the 
+              memory-wasting limitation of a standard linear array queue. In a regular linear queue, 
+              once the rear pointer reaches the end of the array, no new elements can be enqueued even if 
+              slots at the beginning have been vacated by dequeue operations.
+            </p>
+            <div class="formula-box">
+              <div class="formula-title">↻ Circular Modulo Arithmetic</div>
+              <code>Next REAR = (REAR + 1) % Capacity</code>
+              <code>Next FRONT = (FRONT + 1) % Capacity</code>
+            </div>
+          </div>
+
+          <div class="theory-card">
+            <h3>Key Mathematical Conditions</h3>
+            <ul class="theory-list">
+              <li>
+                <strong>Initial State:</strong> 
+                <code>FRONT = -1, REAR = -1, SIZE = 0</code>
+              </li>
+              <li>
+                <strong>Empty Check (Underflow):</strong> 
+                <code>SIZE == 0</code> (or <code>FRONT == -1</code>)
+              </li>
+              <li>
+                <strong>Full Check (Overflow):</strong> 
+                <code>SIZE == Capacity</code> or <code>(REAR + 1) % Capacity == FRONT</code>
+              </li>
+              <li>
+                <strong>Single Element Dequeue:</strong> 
+                When the last remaining element is dequeued, reset <code>FRONT = -1, REAR = -1</code>.
+              </li>
+            </ul>
+          </div>
+
+          <div class="theory-card">
+            <h3>Physical Array vs. Logical FIFO Order</h3>
+            <p>
+              In memory, array indices are fixed from <code>0</code> to <code>Capacity - 1</code>. 
+              However, because of the circular wrap-around, the <em>logical front</em> of the queue may 
+              sit at a higher index than the <em>logical rear</em>!
+            </p>
+            <div class="example-diagram">
+              <div class="ex-row"><strong>Physical Indices:</strong> [0] &nbsp; [1] &nbsp; [2] &nbsp; [3] &nbsp; [4]</div>
+              <div class="ex-row"><strong>Array Contents:</strong> [60] &nbsp; [70] &nbsp; [30] &nbsp; [40] &nbsp; [50]</div>
+              <div class="ex-row"><strong>Pointers:</strong> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ↑ REAR=1 &nbsp;&nbsp;&nbsp;&nbsp; ↑ FRONT=2</div>
+              <div class="ex-row text-cyan"><strong>Logical Queue:</strong> 30 → 40 → 50 → 60 → 70</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: OPERATION HISTORY (PERSISTENT DB) -->
+      <section class="tab-page" id="pageHistory">
+        <div class="history-container">
+          <div class="history-top-bar">
+            <div>
+              <h2>📜 Operation History</h2>
+              <span class="subtext" id="historyDbLabel">Stored in Database</span>
+            </div>
+            <button class="btn btn-sm btn-secondary" id="btnClearHistory">Clear Log</button>
+          </div>
+
+          <div class="history-table-wrapper">
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Action</th>
+                  <th>Value</th>
+                  <th>Front</th>
+                  <th>Rear</th>
+                  <th>Size</th>
+                  <th>Wrap?</th>
+                </tr>
+              </thead>
+              <tbody id="historyTableBody">
+                <tr>
+                  <td colspan="7" class="text-center">Loading history...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: ABOUT & TEAM INFO -->
+      <section class="tab-page" id="pageAbout">
+        <div class="about-container">
+          <div class="about-card brand-card">
+            <div class="about-logo">↻</div>
+            <h2>Circular Queue Visualizer</h2>
+            <p class="subtitle">Mobile-First Academic Data Structures Project — 2026</p>
+          </div>
+
+          <div class="about-card">
+            <h3>👥 Project Development Team</h3>
+            <div class="team-grid">
+              <div class="team-member-pill">
+                <span class="member-avatar">BP</span>
+                <span class="member-name">Babish P K</span>
+              </div>
+              <div class="team-member-pill">
+                <span class="member-avatar">BS</span>
+                <span class="member-name">Bersha S K</span>
+              </div>
+              <div class="team-member-pill">
+                <span class="member-avatar">AL</span>
+                <span class="member-name">Alisha</span>
+              </div>
+              <div class="team-member-pill">
+                <span class="member-avatar">JH</span>
+                <span class="member-name">Jharna</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="about-card">
+            <h3>⚙ Technical Architecture</h3>
+            <ul class="tech-list">
+              <li><strong>Backend Engine:</strong> Python 3 + Flask REST API</li>
+              <li><strong>In-Memory Core:</strong> Object-Oriented CircularQueue (Modulo Math)</li>
+              <li><strong>Database Layer:</strong> SQLite (Default zero-config) + Optional MySQL (Port 3307)</li>
+              <li><strong>Frontend:</strong> Mobile-First Vanilla CSS3 + Modern ES6+ JavaScript</li>
+              <li><strong>PWA:</strong> Installable Web App, Offline Static Cache Service Worker</li>
+            </ul>
+          </div>
+
+          <div class="about-card">
+            <h3>📱 Local Wi-Fi Access for Mobile Testing</h3>
+            <p>
+              To run this application directly on your phone:
+            </p>
+            <ol class="lan-steps">
+              <li>Connect your mobile phone to the same Wi-Fi network as your computer.</li>
+              <li>Open Command Prompt / PowerShell on your PC and run: <code>ipconfig</code></li>
+              <li>Find your <strong>IPv4 Address</strong> (e.g. <code>192.168.1.50</code>).</li>
+              <li>On your phone browser, open: <code>http://&lt;YOUR-IP&gt;:5000</code></li>
+            </ol>
+          </div>
+
+          <footer class="app-footer">
+            <p>Circular Queue Visualizer</p>
+            <p>Academic Data Structures Project — 2026</p>
+            <p class="footer-names">Developed by: Babish P K • Bersha S K • Alisha • Jharna</p>
+          </footer>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Expandable Bottom Sheet / Drawer: LEARNING STEP-BY-STEP EXPLANATION -->
+    <div class="learning-sheet" id="learningSheet">
+      <div class="sheet-handle" id="sheetHandle">
+        <span class="handle-bar"></span>
+      </div>
+      <div class="sheet-header">
+        <div class="sheet-title">
+          <span class="sheet-icon">💡</span>
+          <h3>Step-by-Step Operation Analysis</h3>
+        </div>
+        <button class="sheet-close-btn" id="sheetCloseBtn">✕</button>
+      </div>
+      <div class="sheet-body" id="sheetBody">
+        <div class="step-op-summary" id="stepOpSummary">
+          <strong id="stepOpName">INITIALIZATION</strong>: Set up empty circular array.
+        </div>
+        <ol class="step-list" id="stepList">
+          <li>Capacity = 5, Array slots [0..4] initialized.</li>
+          <li>FRONT = -1, REAR = -1, SIZE = 0.</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- Sticky Mobile Bottom Quick Action Bar -->
+    <div class="bottom-action-bar" id="bottomActionBar">
+      <button class="quick-action-btn" id="quickAddBtn" title="Enqueue Value">
+        <span class="quick-icon">+</span>
+        <span class="quick-label">ADD</span>
+      </button>
+      <button class="quick-action-btn" id="quickRemoveBtn" title="Dequeue Front">
+        <span class="quick-icon">−</span>
+        <span class="quick-label">REMOVE</span>
+      </button>
+      <button class="quick-action-btn" id="quickPeekBtn" title="Peek Front">
+        <span class="quick-icon">👁</span>
+        <span class="quick-label">PEEK</span>
+      </button>
+      <button class="quick-action-btn" id="quickDisplayBtn" title="Display FIFO">
+        <span class="quick-icon">≡</span>
+        <span class="quick-label">DISPLAY</span>
+      </button>
+    </div>
+
+    <!-- Modal for Changing Capacity -->
+    <div class="modal-backdrop" id="capModal" style="display: none;">
+      <div class="modal-box">
+        <h3>Change Queue Capacity</h3>
+        <p class="modal-subtitle">Select a capacity between 2 and 12 slots.</p>
+        <div class="cap-options-grid">
+          <button class="btn-cap-select" data-cap="3">3</button>
+          <button class="btn-cap-select" data-cap="4">4</button>
+          <button class="btn-cap-select active" data-cap="5">5 (Default)</button>
+          <button class="btn-cap-select" data-cap="6">6</button>
+          <button class="btn-cap-select" data-cap="7">7</button>
+          <button class="btn-cap-select" data-cap="8">8</button>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-secondary" id="closeCapModalBtn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

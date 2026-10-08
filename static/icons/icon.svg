@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b1120"/>
+      <stop offset="100%" stop-color="#030712"/>
+    </linearGradient>
+    <linearGradient id="cyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#06b6d4"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="120" fill="url(#bg)" stroke="#1e293b" stroke-width="8"/>
+  <circle cx="256" cy="256" r="170" stroke="#1e293b" stroke-width="26" fill="none"/>
+  <circle cx="256" cy="256" r="170" stroke="url(#cyanGrad)" stroke-width="26" stroke-dasharray="320 80" stroke-linecap="round" fill="none"/>
+  
+  <!-- Pointer node 1 (FRONT) -->
+  <circle cx="256" cy="86" r="32" fill="#06b6d4" stroke="#ffffff" stroke-width="4"/>
+  <text x="256" y="93" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="18" font-weight="900" fill="#030712" text-anchor="middle">F</text>
+  
+  <!-- Pointer node 2 (REAR) -->
+  <circle cx="426" cy="256" r="32" fill="#f59e0b" stroke="#ffffff" stroke-width="4"/>
+  <text x="426" y="263" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="18" font-weight="900" fill="#030712" text-anchor="middle">R</text>
+
+  <!-- Node 3 -->
+  <circle cx="256" cy="426" r="28" fill="#1e293b" stroke="#3b82f6" stroke-width="4"/>
+  <!-- Node 4 -->
+  <circle cx="86" cy="256" r="28" fill="#1e293b" stroke="#10b981" stroke-width="4"/>
+
+  <!-- Center Arrow / Loop -->
+  <path d="M210 230 L260 190 L260 220 C290 220 315 240 320 270 C310 255 290 245 260 245 L260 275 Z" fill="#38bdf8"/>
+  <text x="256" y="325" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="28" font-weight="800" fill="#f8fafc" text-anchor="middle" letter-spacing="3">CIRCULAR</text>
+  <text x="256" y="355" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="20" font-weight="700" fill="#38bdf8" text-anchor="middle" letter-spacing="5">QUEUE</text>
+</svg>
