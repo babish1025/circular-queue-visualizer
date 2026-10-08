@@ -1,6 +1,6 @@
 """
 Database Service Layer
-Graceful dual-backend: SQLite (default zero-config) + Optional MySQL on port 3307.
+Graceful dual-backend: SQLite (default zero-config) + Optional MySQL on port 3306 (Railway).
 Never blocks queue operations if database encounters an issue.
 """
 

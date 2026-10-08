@@ -17,12 +17,13 @@ class Config:
     INSTANCE_DIR.mkdir(exist_ok=True)
     SQLITE_DB_PATH = str(INSTANCE_DIR / "circular_queue.db")
 
-    # Optional MySQL configuration (Port 3307 as specified)
-    DB_HOST = os.environ.get("DB_HOST", "localhost")
-    DB_PORT = int(os.environ.get("DB_PORT", "3307"))
-    DB_NAME = os.environ.get("DB_NAME", "circular_queue_db")
+    # MySQL configuration — Railway instance
+    DB_HOST = os.environ.get("DB_HOST", "mysql.railway.internal")
+    DB_PORT = int(os.environ.get("DB_PORT", "3306"))
+    DB_NAME = os.environ.get("DB_NAME", "railway")
     DB_USER = os.environ.get("DB_USER", "root")
-    DB_PASSWORD = os.environ.get("DB_PASSWORD", "")  # Do NOT hardcode password
+    DB_PASSWORD = os.environ.get("DB_PASSWORD", "XgKmcpqrIemiXCxuqdzsiKoAfgeAsgdw")
+    DB_URL = os.environ.get("DATABASE_URL", "mysql://root:XgKmcpqrIemiXCxuqdzsiKoAfgeAsgdw@mysql.railway.internal:3306/railway")
     
     # Server network settings
     HOST = "0.0.0.0"
