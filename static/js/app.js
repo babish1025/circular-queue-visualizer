@@ -147,7 +147,6 @@
       e.preventDefault();
       handleEnqueue();
     });
-    el.btnEnqueue.addEventListener('click', handleEnqueue);
     el.btnDequeue.addEventListener('click', handleDequeue);
     el.btnPeek.addEventListener('click', handlePeek);
     el.btnDisplay.addEventListener('click', handleDisplay);
